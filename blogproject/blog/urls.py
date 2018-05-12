@@ -15,5 +15,6 @@ urlpatterns = [
     url(r'^category/(?P<pk>[0-9]+)/$', views.CategoryView.as_view(), name='category'),
 
     url(r'^tag/(?P<pk>[0-9]+)/$', views.TagView.as_view(), name='tag'),
+    url(r'^search/$', views.search, name='search'),
 ]
 # 三个参数：网址（相对路径），处理函数，处理函数的别名

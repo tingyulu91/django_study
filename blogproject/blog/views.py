@@ -4,6 +4,23 @@ from .models import Post, Category, Tag
 import markdown
 from comments.forms import CommentForm
 from django.views.generic import ListView, DetailView
+from django.utils.text import slugify
+from markdown.extensions.toc import TocExtension
+from django.db.models import Q #Q对象用于包装查询表达式，为了提供复杂的查询逻辑
+
+def search(request):
+    q = request.GET.get('q') # 获取用户提交的搜索关键词。（see base.html相应的input的name属性值）
+                             # 用户通过表单 get方法提交的数据Django为我们保存在request.GET里，是一个类似于字典的对象
+    error_msg = ''
+
+    if not q:
+        error_msg = "请输入关键词"
+        return render(request, 'blog/index.html', {'error_msg': error_msg})
+
+    post_list = Post.objects.filter(Q(title__icontains=q) | Q(body__icontains=q)) # 前缀i表示不分大小写
+    return render(request, 'blog/index.html', {'error_msg':error_msg,
+                                             'post_list': post_list})
+
 
 # Create your views here.
 """
@@ -221,7 +238,8 @@ class PostDetailView(DetailView):
         md = markdown.Markdown(extensions=[
             'markdown.extensions.extra',
             'markdown.extensions.codehilite',
-            'markdown.extensions.toc',
+            #'markdown.extensions.toc',
+            TocExtension(slugify=slugify),#处理标题的锚点值， slugify用于处理中文
         ])# 先实例化一个markdown.Markdown类
         post.body = md.convert(post.body) # 将post.body中的Markdown文本渲染成HTML文本。
                                           # 调用此方法后，md实例就多了一个toc属性，这个属性的值就是内容的目录
